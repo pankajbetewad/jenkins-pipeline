@@ -2,20 +2,25 @@ pipeline {
     agent any
 
     stages {
-        stage('Fetch code') {
+        stage('fetch code') {
             steps {
-               git branch: 'main', url: 'https://github.com/pankajbetewad/demo1.git'
+                git branch: 'main', url: 'https://github.com/pankajbetewad/devops-portfolio.git'
             }
         }
-        stage('install apache') {
+        stage('build docker image') {
             steps {
-              sh 'sudo apt install apache2 -y'
+                sh 'docker build -t pankajbetewad3/devops-portfolio:${IMAGE_VERSION} .'
             }
         }
-        stage('deploy app') {
+        stage('push image to dockerhub') {
             steps {
-              sh 'sudo cp -R * /var/www/html'
+                withCredentials([usernamePassword(credentialsId: 'dockerHub', passwordVariable: 'password', usernameVariable: 'userName')]) {
+                    sh 'docker login -u ${userName} -p ${password}'
+                    sh 'docker push pankajbetewad3/devops-portfolio:${IMAGE_VERSION}'
+                }
+                
             }
         }
     }
+   
 }
